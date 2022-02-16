@@ -55,7 +55,7 @@ WHERE f.title = 'Academy Dinosaur'
 ORDER BY r.return_date DESC LIMIT 1;
 
 -- Try two
-SELECT f.title, r.rental_date, DATE_ADD(r.rental_date, INTERVAL 6 DAY) AS date_due FROM film f
+SELECT f.title, r.rental_date, DATE_ADD(r.rental_date, INTERVAL f.rental_duration DAY) AS date_due FROM film f
 JOIN inventory i ON i.film_id = f.film_id
 JOIN rental r ON r.inventory_id = i.inventory_id
 WHERE f.title = 'Academy Dinosaur' AND r.return_date IS NULL
