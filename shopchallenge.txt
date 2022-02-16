@@ -1,0 +1,184 @@
+SHOW DATABASES;
+SHOW TABLES;
+
+SET sql_safe_updates = 0;
+
+-- Creating the database for this challenge and using that database
+CREATE DATABASE IF NOT EXISTS TeamsChallengeShop;
+USE TeamsChallengeShop;
+
+-- Space used for DESCRIBING the different tables
+DESCRIBE users;
+DESCRIBE products;
+DESCRIBE orders;
+DESCRIBE orderline;
+
+-- Space for SELECTING ALL from the different tables
+SELECT * FROM users;
+SELECT * FROM products;
+SELECT * FROM orders;
+SELECT * FROM orderline;
+
+
+-- Creating the users table, with all necessary fields for a user to be signed up
+CREATE TABLE IF NOT EXISTS users (
+	users_ID INT AUTO_INCREMENT,
+    users_first_name varchar(250) NOT NULL,
+    users_last_name varchar(250) NOT NULL,
+    users_email_address varchar(250) NOT NULL,
+    users_address varchar(300) NOT NULL,
+    users_postcode varchar(10) NOT NULL, 
+    PRIMARY KEY (users_ID)
+);
+
+-- Creating the products table, with all the fields for a product to be added to the store
+CREATE TABLE IF NOT EXISTS products (
+	products_ID INT AUTO_INCREMENT,
+    products_name varchar(250) NOT NULL, 
+    products_type varchar(250) NOT NULL,
+    products_description varchar(1000) NOT NULL,
+    products_quantity int NOT NULL,
+    products_price DEC(5,2) NOT NULL,
+    PRIMARY KEY (products_ID)
+);
+
+-- Creating the orders table, with all the fields for an order to be added
+CREATE TABLE IF NOT EXISTS orders (
+	orders_ID INT AUTO_INCREMENT,
+    fk_users_ID INT NOT NULL,
+    orders_date DATE NOT NULL,
+    PRIMARY KEY (orders_ID),
+    FOREIGN KEY (fk_users_ID) REFERENCES users(users_ID)
+);
+
+-- Creating the orderline table, with all the fields necessary to make an order
+CREATE TABLE IF NOT EXISTS orderline (
+	orderline_ID INT AUTO_INCREMENT, 
+    fk_orders_ID INT NOT NULL, 
+    fk_products_ID INT NOT NULL, 
+    orderline_quantity int NOT NULL, 
+    orderline_price DEC(5,2) NOT NULL, 
+    PRIMARY KEY (orderline_ID), 
+    FOREIGN KEY (fk_orders_ID) REFERENCES orders(orders_ID), 
+    FOREIGN KEY (fk_products_ID) REFERENCES products(products_ID)
+);
+
+-- Inserting into the users table
+INSERT INTO users (users_first_name, users_last_name, users_email_address, users_address, users_postcode) VALUES ('Jack', 'Wearn', 'jack@wearn.com', '4 Peel House', 'TW20');
+INSERT INTO users (users_first_name, users_last_name, users_email_address, users_address, users_postcode) VALUES ('David', 'Jack', 'david@jack.com', '70 Frinton', 'RM5');
+INSERT INTO users (users_first_name, users_last_name, users_email_address, users_address, users_postcode) VALUES ('Charley', 'Holloway', 'charley@holloway.com', '4 Peel House', 'TW20');
+INSERT INTO users (users_first_name, users_last_name, users_email_address, users_address, users_postcode) VALUES ('Toni', 'Charley', 'toni@charley.com', '44 Rusham', 'TW19');
+INSERT INTO users (users_first_name, users_last_name, users_email_address, users_address, users_postcode) VALUES ('Scott', 'Holland', 'scott@holland.com', '122 nightingale', 'RM4');
+
+-- Inserting into the products table
+INSERT INTO products (products_name, products_type, products_description, products_quantity, products_price) VALUES ('Impact Driver', 'Power Tool', 'DeWalt Impact Driver', 25, 79.99);
+INSERT INTO products (products_name, products_type, products_description, products_quantity, products_price) VALUES ('Drill Driver', 'Power Tool', 'DeWalt Impact Driver', 50, 99.99);
+INSERT INTO products (products_name, products_type, products_description, products_quantity, products_price) VALUES ('Plunge Saw', 'Power Tool', 'DeWalt Plunge Saw', 5, 450.00);
+INSERT INTO products (products_name, products_type, products_description, products_quantity, products_price) VALUES ('18 Guage Nailer', 'Power Tool', 'DeWalt Pin Nailer', 100, 150.00);
+INSERT INTO products (products_name, products_type, products_description, products_quantity, products_price) VALUES ('Jigsaw', 'Power Tool', 'DeWalt Jigsaw', 1000, 125.00);
+
+-- Inserting into the orders table
+INSERT INTO orders (fk_users_ID, orders_date) VALUES (1, curdate());
+INSERT INTO orders (fk_users_ID, orders_date) VALUES (2, curdate());
+INSERT INTO orders (fk_users_ID, orders_date) VALUES (3, '2021-12-12');
+INSERT INTO orders (fk_users_ID, orders_date) VALUES (4, '2021-12-01');
+INSERT INTO orders (fk_users_ID, orders_date) VALUES (5, '2021-11-29');
+
+-- Inserting into the orderline table
+INSERT INTO orderline (fk_orders_ID, fk_products_ID, orderline_quantity, orderline_price) VALUES (1, 4, 1, 450.00);
+INSERT INTO orderline (fk_orders_ID, fk_products_ID, orderline_quantity, orderline_price) VALUES (2, 2, 2, 159.98);
+INSERT INTO orderline (fk_orders_ID, fk_products_ID, orderline_quantity, orderline_price) VALUES (3, 6, 1, 125.00);
+INSERT INTO orderline (fk_orders_ID, fk_products_ID, orderline_quantity, orderline_price) VALUES (4, 1, 1, 79.99);
+INSERT INTO orderline (fk_orders_ID, fk_products_ID, orderline_quantity, orderline_price) VALUES (5, 3, 2, 199.98);
+INSERT INTO orderline (fk_orders_ID, fk_products_ID, orderline_quantity, orderline_price) VALUES (1, 1, 1, 79.99);
+
+
+-- Database Queries
+-- 1) Selecting everything from orders and orderline (to match up an order and their orderline
+SELECT * FROM orders o
+JOIN users u ON u.users_ID=o.fk_users_ID
+JOIN orderline ol ON ol.fk_orders_ID=o.orders_ID;
+
+-- 2) Selecting the users full name and the product they have ordered
+SELECT u.users_first_name, u.users_last_name, p.products_name FROM orders o
+JOIN users u ON u.users_ID=o.fk_users_ID
+JOIN orderline ol ON ol.fk_orders_ID=o.orders_ID
+JOIN products p ON p.products_ID=ol.fk_products_ID;
+
+-- 3) Selecting the users full name, the product they have ordered, quantity of their order and how much the total cost of that order is
+SELECT u.users_first_name, u.users_last_name, p.products_name, ol.orderline_quantity, ol.orderline_price FROM orders o
+JOIN users u ON u.users_ID=o.fk_users_ID
+JOIN orderline ol ON ol.fk_orders_ID=o.orders_ID
+JOIN products p ON p.products_ID=ol.fk_products_ID;
+
+-- 4) Selecting the total number of orders that have been placed
+SELECT COUNT(orders_ID) FROM orders;
+
+-- 5) Selecting the users full name, product they have ordered and total price of the order in descending order by total price
+SELECT u.users_first_name, u.users_last_name, p.products_name, ol.orderline_quantity, ol.orderline_price FROM orders o
+JOIN users u ON u.users_ID=o.fk_users_ID
+JOIN orderline ol ON ol.fk_orders_ID=o.orders_ID
+JOIN products p ON p.products_ID=ol.fk_products_ID
+ORDER BY ol.orderline_price DESC;
+
+-- 6) Selecting the products name and the product quantity with the highest number of products available
+SELECT products_name, MAX(products_quantity) FROM products GROUP BY products_name ORDER BY MAX(products_quantity) DESC LIMIT 1;
+
+-- 7) Selecting average price of all of the products
+SELECT AVG(products_price) FROM products;
+
+-- 8) Selecting all of the orders which were made today, with the user who ordered it and the product they ordered
+SELECT u.users_first_name, p.products_name, o.orders_date  FROM orders o
+JOIN users u ON u.users_ID=o.fk_users_ID
+JOIN orderline ol ON ol.fk_orders_ID=o.orders_ID
+JOIN products p ON p.products_ID=ol.fk_products_ID
+WHERE orders_date = curdate();
+
+-- 9) Selecting the users who's first name has a J to start it
+SELECT * FROM users WHERE users_first_name LIKE 'J%';
+
+-- 10) Selecting the products and displaying their stock value based on the quantity of the product multiplied by the price of the product
+SELECT products_name, products_type, products_quantity, products_price*products_quantity AS products_stock_value FROM products;
+
+-- Deleting Records
+DELETE FROM users WHERE users_first_name = 'Toni';
+DELETE FROM orderline WHERE fk_orders_ID = 4;
+DELETE FROM orders WHERE fk_users_ID = 4;
+
+UPDATE orderline SET fk_products_ID=3 WHERE fk_products_ID=1;
+DELETE FROM products WHERE products_ID = 1;
+
+-- Adding the Reviews Table
+CREATE TABLE IF NOT EXISTS reviews (
+	reviews_ID INT AUTO_INCREMENT, 
+    fk_products_ID INT NOT NULL, 
+    fk_users_ID INT NOT NULL, 
+    reviews_stars INT NOT NULL, 
+    reviews_review_body varchar(500) NOT NULL, 
+    reviews_date DATE NOT NULL, 
+    PRIMARY KEY (reviews_ID), 
+    FOREIGN KEY (fk_products_ID) REFERENCES products(products_ID), 
+    FOREIGN KEY (fk_users_ID) REFERENCES users(users_ID)
+);
+
+-- Inserting into the Reviews Table
+INSERT INTO reviews (fk_products_ID, fk_users_ID, reviews_stars, reviews_review_body, reviews_date) VALUES (3, 1, 5, 'Great Tool, Would highly recommend', curdate());
+INSERT INTO reviews (fk_products_ID, fk_users_ID, reviews_stars, reviews_review_body, reviews_date) VALUES (3, 1, 1, 'Terrible, Cant Recommend', curdate());
+INSERT INTO reviews (fk_products_ID, fk_users_ID, reviews_stars, reviews_review_body, reviews_date) VALUES (2, 3, 5, 'Great Tool, Would highly recommend', curdate());
+INSERT INTO reviews (fk_products_ID, fk_users_ID, reviews_stars, reviews_review_body, reviews_date) VALUES (5, 5, 5, 'Great Tool, Would highly recommend', curdate());
+INSERT INTO reviews (fk_products_ID, fk_users_ID, reviews_stars, reviews_review_body, reviews_date) VALUES (5, 2, 5, 'Great Tool, Would highly recommend', curdate());
+
+-- Selecting all reviews from the reviews table
+SELECT * FROM reviews;
+
+-- Querying the Reviews Table
+-- 1) Selecting the product and their corresponding stars in descending order
+SELECT p.products_name, r.reviews_stars FROM products p
+JOIN reviews r ON p.products_ID = fk_products_ID
+ORDER BY reviews_stars DESC;
+
+-- 2) Selecting the products and their review stars and date, ordering them by product name to group products reviews and only looking at reviews from today
+SELECT p.products_name, r.reviews_stars, r.reviews_date FROM products p
+JOIN reviews r ON p.products_ID = r.fk_products_ID
+WHERE reviews_date = curdate()
+ORDER BY products_name DESC;
